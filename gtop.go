@@ -22,19 +22,23 @@ func main() {
 
 	//termui.UseTheme("helloworld")
 
+	graphs := make(map[string]*termui.FixedLineChart)
 
-	lc0 := termui.NewLineChart()
-	lc0.BorderLabel = "Memory Usage"
-	lc0.Data = []float64{0, 100}
-	lc0.Width = 50
-	lc0.Height = 12
-	lc0.X = 0
-	lc0.Y = 0
-	lc0.AxesColor = termui.ColorWhite
-	lc0.LineColor = termui.ColorGreen | termui.AttrBold
+	memory := termui.NewFixedLineChart()
+	memory.BorderLabel = "Memory Usage"
+	memory.Data = []float64{}
+	memory.Width = 50
+	memory.Height = 12
+	memory.X = 0
+	memory.Y = 0
+	memory.TopValue = 100
+	memory.BottomValue = 0
+	memory.AxesColor = termui.ColorWhite
+	memory.LineColor = termui.ColorGreen | termui.AttrBold
+	graphs["memory"] = memory
 
 
-	termui.Render(lc0)
+	termui.Render(memory)
 	termui.Handle("/sys/kbd/q", func(termui.Event) {
 		termui.StopLoop()
 	})
@@ -42,11 +46,17 @@ func main() {
 		t := e.Data.(termui.EvtTimer)
 		// t is a EvtTimer
 		if t.Count%2 ==0 {
-			//lc0.Data = append(lc0.Data, float64(t.Count))
-			v, _ := mem.VirtualMemory()
-			lc0.Data = append(lc0.Data, v.UsedPercent)
-			termui.Render(lc0)
+			update(graphs)
 		}
 	})
 	termui.Loop()
+}
+
+
+func update(graphs map[string]*termui.FixedLineChart) {
+	//lc0.Data = append(lc0.Data, float64(t.Count))
+	memory := graphs["memory"]
+	v, _ := mem.VirtualMemory()
+	memory.Data = append(memory.Data, v.UsedPercent)
+	termui.Render(memory)
 }
